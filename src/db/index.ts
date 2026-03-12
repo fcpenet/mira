@@ -8,8 +8,14 @@ pool.on('error', (err: Error) => {
 });
 
 /**
- * Run a query scoped to an organization.
- * Sets app.current_org_id so PostgreSQL RLS policies can filter rows.
+ * Run a query scoped to an organization inside an explicit transaction.
+ *
+ * SET LOCAL only takes effect within a transaction block — without BEGIN,
+ * it behaves like SET (session-level) and bleeds across pooled connections.
+ *
+ * SET LOCAL ROLE mira_app is required for PostgreSQL RLS policies to apply;
+ * superuser connections bypass RLS unless the role is explicitly switched.
+ * SET LOCAL reverts both settings automatically on COMMIT or ROLLBACK.
  */
 async function queryAsOrg<T extends QueryResultRow = QueryResultRow>(
   orgId: string,
@@ -18,8 +24,15 @@ async function queryAsOrg<T extends QueryResultRow = QueryResultRow>(
 ): Promise<QueryResult<T>> {
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+    await client.query('SET LOCAL ROLE mira_app');
     await client.query(`SET LOCAL app.current_org_id = '${orgId}'`);
-    return await client.query<T>(text, values);
+    const result = await client.query<T>(text, values);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
   } finally {
     client.release();
   }
