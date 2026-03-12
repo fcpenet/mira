@@ -1,5 +1,5 @@
-const Redis = require('ioredis');
-const config = require('../config');
+import Redis from 'ioredis';
+import config from '../config';
 
 // Two separate clients are required:
 // - publisher: used by the event ingest route to publish events
@@ -7,9 +7,9 @@ const config = require('../config');
 const publisher  = new Redis(config.redis);
 const subscriber = new Redis(config.redis);
 
-publisher.on('error',  (err) => console.error('[redis:pub] error:', err.message));
-subscriber.on('error', (err) => console.error('[redis:sub] error:', err.message));
+publisher.on('error',  (err: Error) => console.error('[redis:pub] error:', err.message));
+subscriber.on('error', (err: Error) => console.error('[redis:sub] error:', err.message));
 
 const CHANNEL = 'mira:events';
 
-module.exports = { publisher, subscriber, CHANNEL };
+export { publisher, subscriber, CHANNEL };

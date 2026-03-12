@@ -1,11 +1,12 @@
 {
   "name": "mira-realtime-platform",
   "version": "1.0.0",
-  "description": "MIRA Technologies real-time event platform — Part 2",
-  "main": "src/server.js",
+  "description": "MIRA Technologies real-time event platform",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "build": "tsc && cp -r src/db/migrations dist/db/",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts"
   },
   "dependencies": {
     "@socket.io/redis-adapter": "^8.3.0",
@@ -18,6 +19,13 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.14.0",
+    "@types/pg": "^8.11.6",
+    "@types/uuid": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
   }
 }

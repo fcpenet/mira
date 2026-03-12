@@ -1,16 +1,15 @@
-const http = require('http');
-const fs   = require('fs');
-const path = require('path');
-const { pool } = require('./db');
-const { attachSocketServer } = require('./socket');
-const config = require('./config');
-const app    = require('./app');
+import http from 'http';
+import fs   from 'fs';
+import path from 'path';
+import { pool } from './db';
+import { attachSocketServer } from './socket';
+import config from './config';
+import app    from './app';
 
-async function runMigrations() {
+async function runMigrations(): Promise<void> {
   const migrationDir = path.join(__dirname, 'db', 'migrations');
   const files = fs.readdirSync(migrationDir).filter(f => f.endsWith('.sql')).sort();
 
-  // Ensure the migrations tracking table exists
   await pool.query(`
     CREATE TABLE IF NOT EXISTS _migrations (
       filename TEXT PRIMARY KEY,
@@ -30,7 +29,7 @@ async function runMigrations() {
   }
 }
 
-async function start() {
+async function start(): Promise<void> {
   try {
     await runMigrations();
 
@@ -41,7 +40,7 @@ async function start() {
       console.log(`[server] listening on port ${config.port}`);
     });
   } catch (err) {
-    console.error('[server] startup failed:', err.message);
+    console.error('[server] startup failed:', (err as Error).message);
     process.exit(1);
   }
 }
