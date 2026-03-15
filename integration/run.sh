@@ -3,9 +3,9 @@
 # Testcontainers manages the containers — Docker must be running.
 #
 # Usage:
-#   ./scripts/test-integration.sh           # run all integration tests
-#   ./scripts/test-integration.sh --watch   # not supported (runInBand only)
-#   ./scripts/test-integration.sh --verbose # pass extra flags to jest
+#   ./integration/run.sh                      # run all integration tests
+#   ./integration/run.sh --testPathPattern=auth  # filter to one file
+#   ./integration/run.sh --verbose            # pass extra flags to jest
 
 set -euo pipefail
 
@@ -14,11 +14,12 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Colour
+NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-STATE_FILE="${ROOT_DIR}/.integration-state.json"
+CONFIG="${SCRIPT_DIR}/config.ts"
+STATE_FILE="${SCRIPT_DIR}/.integration-state.json"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 log()     { echo -e "${CYAN}[integration]${NC} $*"; }
@@ -65,7 +66,7 @@ if [[ ! -d "${ROOT_DIR}/node_modules" ]]; then
   npm install --prefix "${ROOT_DIR}"
 fi
 
-# ── Pull images if not cached (optional, speeds up first run feedback) ────────
+# ── Pull images if not cached ─────────────────────────────────────────────────
 log "ensuring container images are available..."
 docker pull postgres:16-alpine -q &
 docker pull redis:7-alpine -q &
@@ -82,7 +83,7 @@ START_TIME=$(date +%s)
 
 set +e
 npx jest \
-  --config "${ROOT_DIR}/jest.integration.config.ts" \
+  --config "${CONFIG}" \
   --runInBand \
   --forceExit \
   "$@" \
@@ -98,8 +99,6 @@ if [[ ${EXIT_CODE} -eq 0 ]]; then
   success "all integration tests passed (${ELAPSED}s)"
 else
   error "integration tests failed (${ELAPSED}s)"
-  # State file should have been cleaned up by globalTeardown,
-  # but run cleanup defensively in case Jest crashed before teardown ran.
   cleanup_stale_containers
 fi
 

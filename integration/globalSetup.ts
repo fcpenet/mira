@@ -27,7 +27,7 @@ export default async function globalSetup() {
     password: 'mira',
   });
 
-  const migrationDir = path.join(__dirname, 'src', 'db', 'migrations');
+  const migrationDir = path.join(__dirname, '..', 'src', 'db', 'migrations');
   const files = fs.readdirSync(migrationDir).filter(f => f.endsWith('.sql')).sort();
 
   for (const file of files) {

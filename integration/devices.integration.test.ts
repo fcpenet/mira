@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app';
+import app from '../src/app';
 import { truncateAll, dbQuery } from './helpers/db';
 import { seedUser, seedDevice, authHeader, DEMO_ORG_ID } from './helpers/seed';
 

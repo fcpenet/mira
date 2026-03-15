@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../app';
+import app from '../src/app';
 import { truncateAll, dbQuery } from './helpers/db';
 import { seedUser, seedDevice, authHeader, DEMO_ORG_ID } from './helpers/seed';
 
@@ -115,7 +115,6 @@ describe('POST /events/ingest', () => {
       .set('X-Device-Key', device.api_key)
       .send({ type: 'motion', severity: 'low' });
 
-    // Directly check that the inserted event has the correct org_id
     const { rows } = await dbQuery<{ org_id: string }>(
       'SELECT org_id FROM events WHERE device_id = $1',
       [device.id]
@@ -148,7 +147,6 @@ describe('GET /events', () => {
     const user   = await seedUser();
     const device = await seedDevice(DEMO_ORG_ID, { name: 'Named Sensor' });
 
-    // Ingest an event via the API so the device status also updates correctly
     await request(app)
       .post('/events/ingest')
       .set('X-Device-Key', device.api_key)
@@ -249,7 +247,6 @@ describe('GET /events', () => {
       .get('/events')
       .set('Authorization', authHeader(user));
 
-    // Most recent first
     expect(res.body.events[0].type).toBe('second');
     expect(res.body.events[1].type).toBe('first');
   });

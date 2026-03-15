@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { dbQuery } from './db';
-import { UserRole, DeviceType } from '../../types';
+import { UserRole, DeviceType } from '../../src/types';
 
 // The demo org inserted by 001_init.sql — always present, never truncated.
 export const DEMO_ORG_ID = '00000000-0000-0000-0000-000000000001';
